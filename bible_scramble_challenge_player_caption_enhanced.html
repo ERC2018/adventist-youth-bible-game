@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bible Scramble Challenge</title>
+<style>
+:root{--bg:#10182b;--panel:#1d2b47;--panel2:#263a5d;--gold:#ffd166;--white:#f7f8fc;--muted:#b9c5d9;--green:#42d6a0;--red:#ff7777}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 12%,#2c426c,#10182b 65%);font-family:Arial,Helvetica,sans-serif;color:var(--white)}
+button{border:0;border-radius:13px;padding:14px 20px;font-weight:900;font-size:15px;cursor:pointer;transition:.15s}button:hover{filter:brightness(1.12);transform:translateY(-1px)}button:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.app{max-width:1450px;min-height:100vh;margin:auto;padding:18px 24px 28px}header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #405273;padding:5px 0 16px}.logo{font-size:clamp(18px,2.7vw,29px);font-weight:1000;letter-spacing:1.5px;color:var(--gold)}.tagline{color:var(--muted);font-size:12px}
+.program-header{color:#ffd166;text-align:center;font-size:clamp(22px,3.5vw,38px);font-weight:1000;letter-spacing:2px;margin:18px 0 8px;text-shadow:0 2px 8px #0006}.church-footer{color:#ffd166;text-align:center;font-size:clamp(13px,2vw,21px);font-weight:1000;letter-spacing:1.5px;padding:18px 10px 22px;margin-top:20px;border-top:1px solid #7a673b;text-shadow:0 2px 8px #0006}.screen{display:none}.screen.active{display:block}.center{text-align:center}.title{font-size:clamp(27px,4vw,43px);margin:26px 0 8px}.subtitle{color:var(--muted);margin:0 0 20px}
+.panel{max-width:900px;margin:22px auto;background:linear-gradient(145deg,#263958,#17243d);border:1px solid #536785;border-radius:24px;padding:24px;text-align:center;box-shadow:0 16px 45px #0005}
+.panel h2{color:var(--gold);margin:0 0 7px;font-size:23px}.panel p{color:var(--muted);margin:0 0 12px;font-size:14px}
+.wheel-wrap{position:relative;width:min(370px,76vw);aspect-ratio:1;margin:12px auto}.wheel-wrap canvas{width:100%;height:100%;display:block}.pointer{position:absolute;top:-9px;left:50%;transform:translateX(-50%);font-size:34px;color:var(--gold);z-index:2;text-shadow:0 2px 5px #000}
+.result{font-size:24px;color:var(--green);font-weight:1000;min-height:34px;margin:10px 0}
+.gold{background:var(--gold);color:#202030}.blue{background:#42618d;color:white}.green{background:var(--green);color:#062c20}.dark{background:#30415f;color:white}
+.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+.input-row{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin:15px auto 8px}.name-input{background:#0e1729;border:1px solid #536482;border-radius:10px;color:white;padding:13px;font-size:15px;min-width:220px;max-width:100%}.names{color:var(--muted);font-size:13px;margin-top:12px;line-height:1.6}
+.selected-card{max-width:950px;margin:35px auto;background:linear-gradient(145deg,#263958,#17243d);border:1px solid #536785;border-radius:26px;padding:clamp(30px,6vw,65px) 20px;text-align:center;box-shadow:0 16px 45px #0005}
+.selected-label{display:inline-block;color:#ffe08a;font-size:clamp(20px,2.6vw,27px);font-weight:1000;letter-spacing:2px;padding:12px 24px;border:2px solid #d6ad4c;border-radius:14px;background:linear-gradient(135deg,#3a4b69 0%,#17243d 55%,#101a2d 100%);text-shadow:0 2px 3px #000,0 0 10px #ffd16666;box-shadow:inset 0 2px 8px #ffffff18,inset 0 -5px 12px #0006,0 5px 16px #0007,0 0 0 3px #d6ad4c22}.selected-name{font-size:clamp(44px,9vw,100px);font-weight:1000;line-height:1.1;margin:25px 0;overflow-wrap:anywhere;text-shadow:0 6px 0 #0005}
+.category-label{display:inline-block;border:2px solid #d6ad4c;border-radius:14px;padding:12px 24px;color:var(--gold);font-weight:1000;letter-spacing:2px;font-size:clamp(20px,2.8vw,30px);margin:0 auto 20px;box-shadow:inset 0 0 0 2px #d6ad4c22,0 0 16px #ffd16622;background:linear-gradient(135deg,#263958,#17243d)}
+.game-grid{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:20px;max-width:1120px;margin:20px auto;align-items:stretch}
+.game-stage{min-height:440px;background:linear-gradient(145deg,#263958,#17243d);border:1px solid #536785;border-radius:25px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(22px,4vw,48px);box-shadow:0 16px 45px #0005}
+.category-heading{display:inline-block;font-size:clamp(21px,3vw,34px);font-weight:1000;letter-spacing:2px;color:var(--gold);margin:0 auto 18px;padding:12px 24px;border:2px solid #d6ad4c;border-radius:14px;background:linear-gradient(135deg,#263958,#17243d);box-shadow:inset 0 0 0 2px #d6ad4c22,0 0 16px #ffd16622}
+.scramble{font-size:clamp(43px,7.6vw,94px);font-weight:1000;line-height:1.12;letter-spacing:clamp(2px,.8vw,9px);margin:12px 0 20px;overflow-wrap:anywhere;text-shadow:0 6px 0 #0005}
+.help{color:var(--muted);font-size:15px;min-height:22px}.answer{font-size:clamp(32px,5vw,58px);font-weight:1000;color:var(--green);margin:20px 0;overflow-wrap:anywhere}
+.timer-box{background:#111d32;border:1px solid #536785;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px}.timer-label{color:var(--muted);font-size:12px;font-weight:900;letter-spacing:2px}.timer{font-size:82px;font-weight:1000;color:var(--gold);margin:12px 0;font-variant-numeric:tabular-nums}.timer.urgent{color:var(--red);animation:pulse .5s infinite alternate}@keyframes pulse{to{transform:scale(1.08)}}.timer-caption{font-size:12px;color:var(--muted)}
+.hidden{display:none!important}
+@media(max-width:760px){.app{padding:12px}.tagline{display:none}.panel{padding:15px}.wheel-wrap{width:min(300px,76vw)}.game-grid{grid-template-columns:1fr;gap:12px}.game-stage{min-height:340px;padding:22px 13px}.timer-box{flex-direction:row;gap:15px;padding:9px}.timer{font-size:48px;margin:0}.timer-caption{max-width:90px}.selected-card{margin:20px auto}}
+</style></head>
+<body><div class="app">
+<header><div class="logo">✦ BIBLE SCRAMBLE CHALLENGE ✦</div><div class="tagline">READ • THINK • UNSCRAMBLE • LEARN</div></header>
+<div class="program-header">ADVENTIST YOUTH PROGRAM</div>
+
+<section id="participantScreen" class="screen active">
+ <div class="center"><h1 class="title">PARTICIPANT SELECTION</h1><p class="subtitle">Add the players, then spin to choose who will answer.</p></div>
+ <div class="panel">
+  <h2>🎡 PARTICIPANT WHEEL</h2><p>Spin the wheel to randomly select one participant.</p>
+  <div class="wheel-wrap"><span class="pointer">▼</span><canvas id="playerWheel" width="600" height="600"></canvas></div>
+  <div class="result" id="playerWheelResult">Who's going to play?</div>
+  <div class="actions"><button class="blue" id="spinPlayer">SPIN PARTICIPANT</button></div>
+  <div class="input-row"><input id="nameInput" class="name-input" maxlength="32" placeholder="Enter participant's name"><button class="green" id="addName">＋ ADD NAME</button><button class="dark" id="clearNames">CLEAR NAMES</button></div>
+  <div class="names" id="namesList">No names added yet.</div>
+ </div>
+</section>
+
+<section id="chosenScreen" class="screen">
+ <div class="selected-card">
+  <div class="selected-label">THE SELECTED PARTICIPANT IS</div>
+  <div class="selected-name" id="selectedName">PLAYER NAME</div>
+  <button class="gold" id="chooseCategory">CHOOSE CATEGORY</button>
+ </div>
+</section>
+
+<section id="categoryScreen" class="screen">
+ <div class="center"><h1 class="title">CHOOSE A BIBLE CATEGORY</h1><p class="subtitle">Spin the category wheel to select the challenge.</p></div>
+ <div class="panel">
+  <h2>🎯 CATEGORY SPIN WHEEL</h2><p>Bible Characters • Bible Books • Bible Events • Bible Places</p>
+  <div class="wheel-wrap"><span class="pointer">▼</span><canvas id="categoryWheel" width="600" height="600"></canvas></div>
+  <div class="result" id="categoryWheelResult">Spin to choose a category!</div>
+  <div class="actions"><button class="gold" id="spinCategory">SPIN CATEGORY</button><button class="dark" id="backToPlayer">← BACK</button></div>
+ </div>
+</section>
+
+<section id="gameScreen" class="screen">
+ <div class="center player-display" style="margin-top:20px"><div class="selected-label player-label" id="gamePlayer">PLAYER</div></div>
+ <div class="game-grid">
+  <div class="game-stage">
+   <div class="category-heading" id="scrambleCategoryHeading">BIBLE CATEGORY</div>
+   <div class="scramble" id="scrambleWord">SCRAMBLED WORD</div>
+   <div class="help" id="gameHelp">You have 20 seconds to answer!</div>
+   <button class="green hidden" id="letsSee">LET'S SEE</button>
+   <div class="answer" id="correctAnswer"></div>
+   <button class="gold hidden" id="nextRound">BACK TO SPIN WHEELS</button>
+  </div>
+  <aside class="timer-box"><div><div class="timer-label">TIME LEFT</div><div class="timer" id="countdown">20</div><div class="timer-caption" id="timerCaption">SECONDS</div></div></aside>
+ </div>
+</section>
+</div>
+<footer class="church-footer">JARDIN DE AYALA SEVENTH DAY ADVENTIS CHURCH</footer>
+<script>
+const categories=[
+{id:"characters",label:"BIBLE CHARACTERS",color:"#d99a32",words:["MOSES","DAVID","ABRAHAM","ESTHER","DANIEL","SAMUEL","JOSEPH","RUTH","GOLIATH","SOLOMON","ELIJAH","PETER","PAUL","MARY","MARTHA","JONAH","NOAH","JOSHUA","DEBORAH","ZACCHAEUS"]},
+{id:"books",label:"BIBLE BOOKS",color:"#3d9b91",words:["GENESIS","EXODUS","LEVITICUS","NUMBERS","DEUTERONOMY","JOSHUA","JUDGES","PSALMS","PROVERBS","ISAIAH","JEREMIAH","MATTHEW","MARK","LUKE","JOHN","ACTS","ROMANS","REVELATION","EPHESIANS","PHILIPPIANS"]},
+{id:"events",label:"BIBLE EVENTS",color:"#9868bf",words:["CREATION","THE FLOOD","BURNING BUSH","TEN PLAGUES","RED SEA CROSSING","TEN COMMANDMENTS","DAVID AND GOLIATH","JESUS' BIRTH","WATER INTO WINE","FEEDING FIVE THOUSAND","LAST SUPPER","CRUCIFIXION","RESURRECTION","PENTECOST","DANIEL IN THE LIONS' DEN"]},
+{id:"places",label:"BIBLE PLACES",color:"#438bd0",words:["JERUSALEM","BETHLEHEM","NAZARETH","JERICHO","EGYPT","CANAAN","GALILEE","JORDAN","BABYLON","SINAI","SAMARIA","EDEN","GOLGOTHA","DAMASCUS","CANA"]}
+];
+let players=[],selectedPlayer="",angles={player:0,category:0},busy={player:false,category:false},timerId=null,seconds=20,answer="",used={};
+let audioContext=null;
+function unlockAudio(){
+  try {
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(AC){if(!audioContext)audioContext=new AC();if(audioContext.state==="suspended")audioContext.resume();}
+  } catch(e) {}
+}
+function playTick(){
+  try {
+    if(!audioContext)return;
+    const now=audioContext.currentTime;
+    const osc=audioContext.createOscillator(),gain=audioContext.createGain();
+    osc.type="sine";osc.frequency.setValueAtTime(1150,now);
+    gain.gain.setValueAtTime(0.0001,now);
+    gain.gain.exponentialRampToValueAtTime(0.16,now+0.004);
+    gain.gain.exponentialRampToValueAtTime(0.0001,now+0.075);
+    osc.connect(gain);gain.connect(audioContext.destination);
+    osc.start(now);osc.stop(now+0.08);
+  } catch(e) {}
+}
+
+const $=id=>document.getElementById(id);
+function showScreen(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));$(id).classList.add("active");}
+function drawWheel(canvas,items,type){
+ const c=canvas.getContext("2d"),n=Math.max(items.length,1),cx=300,cy=300,r=278,arc=2*Math.PI/n;c.clearRect(0,0,600,600);
+ if(!items.length){c.beginPath();c.arc(cx,cy,r,0,Math.PI*2);c.fillStyle="#30415f";c.fill();c.fillStyle="#fff";c.font="bold 27px Arial";c.textAlign="center";c.fillText("ADD NAMES",cx,cy);return;}
+ items.forEach((item,i)=>{let start=angles[type]+i*arc-Math.PI/2;c.beginPath();c.moveTo(cx,cy);c.arc(cx,cy,r,start,start+arc);c.closePath();c.fillStyle=type==="category"?item.color:`hsl(${(i*360/n+20)%360},62%,${i%2?40:51}%)`;c.fill();c.strokeStyle="#fff";c.lineWidth=3;c.stroke();c.save();c.translate(cx,cy);c.rotate(start+arc/2);c.textAlign="right";c.fillStyle="#fff";let label=type==="category"?item.label.replace("BIBLE ",""):item;c.font=`bold ${type==="category"?20:(n>12?17:23)}px Arial`;c.fillText(label.length>19?label.slice(0,18)+"…":label,r-20,7);c.restore();});
+ c.beginPath();c.arc(cx,cy,39,0,2*Math.PI);c.fillStyle="#ffd166";c.fill();c.fillStyle="#17243d";c.font="bold 19px Arial";c.textAlign="center";c.fillText("GO",cx,cy+7);
+}
+function refresh(){drawWheel($("playerWheel"),players,"player");drawWheel($("categoryWheel"),categories,"category");$("namesList").textContent=players.length?"On the wheel: "+players.join(" • "):"No names added yet.";}
+function addName(){let v=$("nameInput").value.trim();if(!v){$("nameInput").focus();return;}if(players.some(x=>x.toLowerCase()===v.toLowerCase())){alert("That name is already on the wheel.");return;}players.push(v);$("nameInput").value="";refresh();}
+$("addName").onclick=addName;$("nameInput").addEventListener("keydown",e=>{if(e.key==="Enter")addName();});
+$("clearNames").onclick=()=>{if(players.length&&confirm("Clear all participant names?")){players=[];refresh();$("playerWheelResult").textContent="Who's going to play?";}};
+function spin(type){
+ if(busy[type])return;let items=type==="player"?players:categories;if(!items.length){alert(type==="player"?"Add participant names first.":"No categories available.");return;}
+ busy[type]=true;let chosen=Math.floor(Math.random()*items.length),arc=2*Math.PI/items.length,target=-Math.PI/2-(chosen*arc+arc/2),delta=((target-angles[type])%(2*Math.PI)+2*Math.PI)%(2*Math.PI),start=angles[type],end=start+Math.PI*2*5+delta,t0=performance.now(),duration=3800,canvas=$(type==="player"?"playerWheel":"categoryWheel");
+ function frame(now){let t=Math.min((now-t0)/duration,1),ease=1-Math.pow(1-t,4);angles[type]=start+(end-start)*ease;drawWheel(canvas,items,type);if(t<1){requestAnimationFrame(frame);return;}angles[type]=end;busy[type]=false;drawWheel(canvas,items,type);
+ if(type==="player"){selectedPlayer=players.splice(chosen,1)[0];$("selectedName").textContent=selectedPlayer;$("playerWheelResult").textContent="Selected: "+selectedPlayer;refresh();showScreen("chosenScreen");}
+ else{let cat=categories[chosen];$("categoryWheelResult").textContent=cat.label;setTimeout(()=>startGame(cat),750);}
+ }requestAnimationFrame(frame);
+}
+$("spinPlayer").onclick=()=>spin("player");$("spinCategory").onclick=()=>{unlockAudio();spin("category");};
+$("chooseCategory").onclick=()=>{showScreen("categoryScreen");$("categoryWheelResult").textContent="Spin to choose a category!";drawWheel($("categoryWheel"),categories,"category");};
+$("backToPlayer").onclick=()=>showScreen("participantScreen");
+function scrambleWord(w){return w.split(/( )/).map(part=>{if(part===" ")return part;let a=part.split(""),b=a.slice();if(b.length<2)return part;for(let k=0;k<20&&b.join("")===a.join("");k++){b=a.slice();for(let i=b.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}}return b.join("");}).join("");}
+function startGame(cat){
+ let pool=cat.words.map((w,i)=>i);if(!used[cat.id]||used[cat.id].length>=pool.length)used[cat.id]=[];pool=pool.filter(i=>!used[cat.id].includes(i));let idx=pool[Math.floor(Math.random()*pool.length)];used[cat.id].push(idx);answer=cat.words[idx];
+ $("scrambleCategoryHeading").textContent=cat.label;$("gamePlayer").textContent="PLAYER: "+selectedPlayer.toUpperCase();$("scrambleWord").textContent=scrambleWord(answer);$("scrambleWord").classList.remove("hidden");$("correctAnswer").textContent="";$("letsSee").classList.add("hidden");$("nextRound").classList.add("hidden");$("gameHelp").textContent="Arrange the letters before the 20 seconds run out!";$("timerCaption").textContent="SECONDS";seconds=20;updateTimer();showScreen("gameScreen");
+ if(timerId)clearInterval(timerId);timerId=setInterval(()=>{seconds--;updateTimer();if(seconds>0)playTick();if(seconds<=0){clearInterval(timerId);timerId=null;timeUp();}},1000);
+}
+function updateTimer(){$("countdown").textContent=seconds;$("countdown").classList.toggle("urgent",seconds<=5);}
+function timeUp(){$("timerCaption").textContent="TIME IS UP!";$("gameHelp").textContent="Your time is up! Click LET'S SEE to reveal the answer."; $("letsSee").classList.remove("hidden");announce();}
+function announce(){if("speechSynthesis"in window){speechSynthesis.cancel();let u=new SpeechSynthesisUtterance("Your time is up!");u.rate=.9;speechSynthesis.speak(u);}else{try{let a=new(window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=740;g.gain.setValueAtTime(.2,a.currentTime);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.8);o.start();o.stop(a.currentTime+.8);}catch(e){}}}
+$("letsSee").onclick=()=>{$("scrambleWord").classList.add("hidden");$("correctAnswer").textContent=answer;$("gameHelp").textContent="Correct answer revealed!";$("letsSee").classList.add("hidden");$("nextRound").classList.remove("hidden");$("timerCaption").textContent="ANSWER";};
+$("nextRound").onclick=()=>{if(timerId){clearInterval(timerId);timerId=null;}if("speechSynthesis"in window)speechSynthesis.cancel();$("countdown").classList.remove("urgent");selectedPlayer="";answer="";$("playerWheelResult").textContent="Who's going to play?";$("categoryWheelResult").textContent="Spin to choose a category!";showScreen("participantScreen");};
+refresh();
+</script></body></html>
